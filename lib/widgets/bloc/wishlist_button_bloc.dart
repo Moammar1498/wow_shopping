@@ -14,8 +14,8 @@ class WishlistButtonBloc
         _item = item,
         super(WishlistButtonState(
             isWishlisted: wishlistRepo.isInWishlist(item))) {
-    on<WishlistStarted>(_onWishlistStarted);
     on<IsTogglePressed>(_onTogglePressed);
+    on<WishlistStarted>(_onWishlistStarted);
   }
 
   final WishlistRepo _wishlistRepo;

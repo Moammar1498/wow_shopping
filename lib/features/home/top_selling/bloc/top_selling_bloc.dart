@@ -13,6 +13,7 @@ class TopSellingBloc extends Bloc<TopSellingEvent, TopSellingState> {
         super(TopSellingInitial()) {
     on<TopSellingFetchRequested>(_onTopSellingFetchRequested);
   }
+
   final ProductsRepo _productsRepo;
 
   Future<void> _onTopSellingFetchRequested(

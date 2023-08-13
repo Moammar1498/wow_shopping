@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:wow_shopping/app/assets.dart';
+import 'package:wow_shopping/features/categories/cubit/category_items_cubit.dart';
 import 'package:wow_shopping/widgets/app_icon.dart';
 import 'package:wow_shopping/widgets/category_nav_list.dart';
 import 'package:wow_shopping/widgets/common.dart';
@@ -7,25 +9,25 @@ import 'package:wow_shopping/widgets/sliver_expansion_tile.dart';
 import 'package:wow_shopping/widgets/top_nav_bar.dart';
 
 @immutable
-class CategoriesPage extends StatefulWidget {
+class CategoriesPage extends StatelessWidget {
   const CategoriesPage({super.key});
 
   @override
-  State<CategoriesPage> createState() => _CategoriesPageState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => CategoryItemsCubit(),
+      child: const CategoriesView(),
+    );
+  }
 }
 
-class _CategoriesPageState extends State<CategoriesPage> {
-  var _selectedCategory = CategoryItem.global;
-
-  void _onCategoryItemPressed(CategoryItem value) {
-    // FIXME: implement filter or deep link?
-    setState(() {
-      _selectedCategory = value;
-    });
-  }
+class CategoriesView extends StatelessWidget {
+  const CategoriesView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final selectedCategory = context.select(
+        (CategoryItemsCubit categoryCubit) => categoryCubit.state.selectedItem);
     return SizedBox.expand(
       child: Material(
         child: Column(
@@ -42,8 +44,9 @@ class _CategoriesPageState extends State<CategoriesPage> {
                 ),
               ],
               bottom: CategoryNavList(
-                selected: _selectedCategory,
-                onCategoryItemPressed: _onCategoryItemPressed,
+                selected: selectedCategory,
+                onCategoryItemPressed:
+                    context.read<CategoryItemsCubit>().onCategoryItemPressed,
               ),
             ),
             Expanded(

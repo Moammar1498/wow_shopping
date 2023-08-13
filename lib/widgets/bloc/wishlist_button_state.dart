@@ -1,12 +1,10 @@
 part of 'wishlist_button_bloc.dart';
 
-@immutable
 final class WishlistButtonState {
+  const WishlistButtonState({required this.isWishlisted});
   final bool isWishlisted;
 
-  const WishlistButtonState({required this.isWishlisted});
-
-  WishlistButtonState copyWith(bool? isWishListed) {
+  WishlistButtonState copyWith(bool? isWishlisted) {
     return WishlistButtonState(isWishlisted: isWishlisted ?? this.isWishlisted);
   }
 }

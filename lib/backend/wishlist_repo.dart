@@ -48,7 +48,8 @@ class WishlistRepo {
   List<ProductItem> get currentWishlistItems =>
       _wishlist.items.map(_productsRepo.findProduct).toList();
 
-  Stream<List<ProductItem>> get streamWishlistItems => _wishlistController.stream;
+  Stream<List<ProductItem>> get streamWishlistItems =>
+      _wishlistController.stream;
 
   bool isInWishlist(ProductItem item) {
     return _wishlist.items.contains(item.id);

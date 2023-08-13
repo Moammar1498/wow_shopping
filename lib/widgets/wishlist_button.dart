@@ -26,15 +26,14 @@ class WishlistButton extends StatelessWidget {
       child: const WishlistButtonContent(),
     );
   }
-
-  // void _onTogglePressed(bool value) {
-  //   if (value) {
-  //     wishlistRepo.addToWishlist(widget.item.id);
-  //   } else {
-  //     wishlistRepo.removeToWishlist(widget.item.id);
-  //   }
-  // }
 }
+// void _onTogglePressed(bool value) {
+//   if (value) {
+//     wishlistRepo.addToWishlist(widget.item.id);
+//   } else {
+//     wishlistRepo.removeToWishlist(widget.item.id);
+//   }
+// }
 
 class WishlistButtonContent extends StatelessWidget {
   const WishlistButtonContent({super.key});
