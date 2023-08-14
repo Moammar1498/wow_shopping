@@ -1,7 +1,4 @@
 // ignore_for_file: depend_on_referenced_packages
-
-import 'dart:async';
-
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 import 'package:wow_shopping/backend/backend.dart';
@@ -17,15 +14,24 @@ class WishlistBloc extends Bloc<WishlistEvent, WishlistState> {
     on<SelectItem>(_selectItem);
     on<SelectAll>(_selectAll);
     on<RemoveSelected>(_removeSelectedItem);
+    on<ListenWishlistStream>(_listenToWishlist);
     on<UpdateWishlistItems>(_onUpdateWishlistItems);
-    _wishlistItemsSubscription =
-        wishlistRepo.streamWishlistItems.listen((items) {
-      add(UpdateWishlistItems(wishlistItems: items));
-    });
+
+    // _wishlistItemsSubscription =
+    //     wishlistRepo.streamWishlistItems.listen((items) {
+    //   add(UpdateWishlistItems(wishlistItems: items));
+    // });
   }
 
   final WishlistRepo _wishlistRepo;
-  late final StreamSubscription<List<ProductItem>> _wishlistItemsSubscription;
+  // late final StreamSubscription<List<ProductItem>> _wishlistItemsSubscription;
+
+  void _listenToWishlist(
+      ListenWishlistStream event, Emitter<WishlistState> emit) async {
+    await emit.onEach(_wishlistRepo.streamWishlistItems, onData: (wishedItems) {
+      add(UpdateWishlistItems(wishlistItems: wishedItems));
+    });
+  }
 
   void _selectItem(SelectItem event, Emitter<WishlistState> emit) async {
     if (event.selected) {
@@ -66,9 +72,9 @@ class WishlistBloc extends Bloc<WishlistEvent, WishlistState> {
     return state.selectedItems.contains(item.id);
   }
 
-  @override
-  Future<void> close() {
-    _wishlistItemsSubscription.cancel();
-    return super.close();
-  }
+  // @override
+  // Future<void> close() {
+  //   _wishlistItemsSubscription.cancel();
+  //   return super.close();
+  // }
 }

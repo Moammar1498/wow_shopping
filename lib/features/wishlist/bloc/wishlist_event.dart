@@ -12,6 +12,8 @@ final class SelectItem extends WishlistEvent {
 
 final class SelectAll extends WishlistEvent {}
 
+final class ListenWishlistStream extends WishlistEvent {}
+
 final class UpdateWishlistItems extends WishlistEvent {
   final List<ProductItem> wishlistItems;
 

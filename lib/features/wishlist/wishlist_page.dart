@@ -22,7 +22,8 @@ class _WishlistPageState extends State<WishlistPage> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<WishlistBloc>(
-        create: (context) => WishlistBloc(context.wishlistRepo),
+        create: (context) =>
+            WishlistBloc(context.wishlistRepo)..add(ListenWishlistStream()),
         child: const WishlistView());
   }
 }
