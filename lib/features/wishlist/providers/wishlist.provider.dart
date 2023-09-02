@@ -15,6 +15,7 @@ class SelectWishListItemNotifier extends Notifier<Set<String>> {
     } else {
       selectedItems.remove(item.id);
     }
+    state = selectedItems;
   }
 
   void toggleSelectAll() {
@@ -26,6 +27,8 @@ class SelectWishListItemNotifier extends Notifier<Set<String>> {
     } else {
       selectedItems.addAll(allIds);
     }
+
+    state = selectedItems;
   }
 
   void removeSelected() {
@@ -33,7 +36,7 @@ class SelectWishListItemNotifier extends Notifier<Set<String>> {
     for (final selected in selectedItems) {
       ref.read(wishlistRepoProvider).removeToWishlist(selected);
     }
-    selectedItems.clear();
+    state = {};
   }
 
   void onTogglePressed(bool value, ProductItem item) {
