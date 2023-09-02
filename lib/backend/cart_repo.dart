@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:decimal/decimal.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wow_shopping/models/cart_item.dart';
 import 'package:wow_shopping/models/cart_storage.dart';
 import 'package:path_provider/path_provider.dart' as path_provider;
@@ -10,16 +10,24 @@ import 'package:path/path.dart' as path;
 import 'package:wow_shopping/models/product_item.dart';
 import 'package:wow_shopping/backend/wishlist_repo.dart';
 
-/// FIXME: Very similar to the [WishlistRepo] and should be refactored out and simplified
-class CartRepo {
-  CartRepo._(this._file, this._storage);
+final cartStorageProvider = StateProvider<CartStorage>((ref) {
+  return const CartStorage(items: []);
+});
 
-  final File _file;
-  CartStorage _storage;
-  late StreamController<List<CartItem>> _cartController;
+final cartRepoProvider = Provider<CartRepo>((ref) {
+  return CartRepo._(ref);
+});
+
+/// FIXME: Very similar to the [WishlistRepo] and should be refactored out and simplified
+
+class CartRepo {
+  CartRepo._(this.ref);
+
+  final Ref ref;
+  late final File _file;
   Timer? _saveTimer;
 
-  static Future<CartRepo> create() async {
+  Future<void> create() async {
     CartStorage storage;
     try {
       final dir = await path_provider.getApplicationDocumentsDirectory();
@@ -31,44 +39,37 @@ class CartRepo {
       } else {
         storage = CartStorage.empty;
       }
-      return CartRepo._(file, storage)..init();
+      ref.read(cartStorageProvider.notifier).update((state) => storage);
     } catch (error, stackTrace) {
       print('$error\n$stackTrace'); // Send to server?
       rethrow;
     }
   }
 
-  void init() {
-    _cartController = StreamController<List<CartItem>>.broadcast(
-      onListen: () => _emitCart(),
-    );
-  }
-
-  void _emitCart() {
-    _cartController.add(currentCartItems);
-  }
-
-  List<CartItem> get currentCartItems => _storage.items;
-
-  Stream<List<CartItem>> get streamCartItems => _cartController.stream;
+  List<CartItem> get currentCartItems => ref.read(cartStorageProvider).items;
 
   CartItem cartItemForProduct(ProductItem item) {
-    return _storage.items //
-        .firstWhere((el) => el.product.id == item.id, orElse: () => CartItem.none);
+    return ref
+        .read(cartStorageProvider)
+        .items //
+        .firstWhere((el) => el.product.id == item.id,
+            orElse: () => CartItem.none);
   }
 
   bool cartContainsProduct(ProductItem item) {
     return cartItemForProduct(item) != CartItem.none;
   }
 
-  void addToCart(ProductItem item, {ProductOption option = ProductOption.none}) {
+  void addToCart(ProductItem item,
+      {ProductOption option = ProductOption.none}) {
+    final cartItems = ref.read(cartStorageProvider);
     if (cartContainsProduct(item)) {
       // FIXME: increase quantity
       return;
     }
-    _storage = _storage.copyWith(
+    final updatedCart = cartItems.copyWith(
       items: {
-        ..._storage.items,
+        ...cartItems.items,
         CartItem(
           product: item,
           option: option,
@@ -78,22 +79,24 @@ class CartRepo {
         ),
       },
     );
-    _emitCart();
+    ref.read(cartStorageProvider.notifier).update((state) => updatedCart);
     _saveCart();
   }
 
   void removeToCart(String productId) {
-    _storage = _storage.copyWith(
-      items: _storage.items.where((el) => el.product.id != productId),
+    final cartItems = ref.read(cartStorageProvider);
+    final updatedCart = cartItems.copyWith(
+      items: cartItems.items.where((el) => el.product.id != productId),
     );
-    _emitCart();
+    ref.read(cartStorageProvider.notifier).update((state) => updatedCart);
     _saveCart();
   }
 
   void _saveCart() {
     _saveTimer?.cancel();
     _saveTimer = Timer(const Duration(seconds: 1), () async {
-      await _file.writeAsString(json.encode(_storage.toJson()));
+      await _file
+          .writeAsString(json.encode(ref.read(cartStorageProvider).toJson()));
     });
   }
 }

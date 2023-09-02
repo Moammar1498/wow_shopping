@@ -1,22 +1,29 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wow_shopping/backend/product_repo.dart';
 import 'package:wow_shopping/models/product_item.dart';
 import 'package:path_provider/path_provider.dart' as path_provider;
 import 'package:path/path.dart' as path;
 import 'package:wow_shopping/models/wishlist_storage.dart';
 
-class WishlistRepo {
-  WishlistRepo._(this._productsRepo, this._file, this._wishlist);
+final wishlistRepoProvider = Provider<WishlistRepo>((ref) {
+  return WishlistRepo._(ref);
+});
 
-  final ProductsRepo _productsRepo;
-  final File _file;
-  WishlistStorage _wishlist;
-  late StreamController<List<ProductItem>> _wishlistController;
+final wishlistStorageProvider = StateProvider<WishlistStorage>((ref) {
+  return const WishlistStorage(items: {});
+});
+
+class WishlistRepo {
+  WishlistRepo._(this.ref);
+
+  final Ref ref;
+  late final File _file;
   Timer? _saveTimer;
 
-  static Future<WishlistRepo> create(ProductsRepo productsRepo) async {
+  Future<void> create() async {
     WishlistStorage wishlist;
     try {
       final dir = await path_provider.getApplicationDocumentsDirectory();
@@ -28,67 +35,49 @@ class WishlistRepo {
       } else {
         wishlist = WishlistStorage.empty;
       }
-      return WishlistRepo._(productsRepo, file, wishlist)..init();
+      ref.read(wishlistStorageProvider.notifier).update((state) => wishlist);
     } catch (error, stackTrace) {
       print('$error\n$stackTrace'); // Send to server?
       rethrow;
     }
   }
 
-  void init() {
-    _wishlistController = StreamController<List<ProductItem>>.broadcast(
-      onListen: () => _emitWishlist(),
-    );
-  }
-
-  void _emitWishlist() {
-    _wishlistController.add(currentWishlistItems);
-  }
-
-  List<ProductItem> get currentWishlistItems =>
-      _wishlist.items.map(_productsRepo.findProduct).toList();
-
-  Stream<List<ProductItem>> get streamWishlistItems => _wishlistController.stream;
-
-  bool isInWishlist(ProductItem item) {
-    return _wishlist.items.contains(item.id);
-  }
-
-  Stream<bool> streamIsInWishlist(ProductItem item) async* {
-    bool last = isInWishlist(item);
-    yield last;
-    await for (final list in streamWishlistItems) {
-      final current = list.any((product) => product.id == item.id);
-      if (current != last) {
-        yield current;
-        last = current;
-      }
-    }
-  }
+  List<ProductItem> get currentWishlistItems => ref
+      .read(wishlistStorageProvider)
+      .items
+      .map(ref.read(productRepoProvider).findProduct)
+      .toList();
 
   void addToWishlist(String productId) {
-    if (_wishlist.items.contains(productId)) {
+    final wishlist = ref.read(wishlistStorageProvider);
+    if (wishlist.items.contains(productId)) {
       return;
     }
-    _wishlist = _wishlist.copyWith(
-      items: {..._wishlist.items, productId},
+    final updatedWishlist = wishlist.copyWith(
+      items: {...wishlist.items, productId},
     );
-    _emitWishlist();
+    ref
+        .read(wishlistStorageProvider.notifier)
+        .update((state) => updatedWishlist);
     _saveWishlist();
   }
 
   void removeToWishlist(String productId) {
-    _wishlist = _wishlist.copyWith(
-      items: _wishlist.items.where((el) => el != productId),
+    final wishlist = ref.read(wishlistStorageProvider);
+    final updatedWishlist = wishlist.copyWith(
+      items: wishlist.items.where((el) => el != productId),
     );
-    _emitWishlist();
+    ref
+        .read(wishlistStorageProvider.notifier)
+        .update((state) => updatedWishlist);
     _saveWishlist();
   }
 
   void _saveWishlist() {
     _saveTimer?.cancel();
     _saveTimer = Timer(const Duration(seconds: 1), () async {
-      await _file.writeAsString(json.encode(_wishlist.toJson()));
+      await _file.writeAsString(
+          json.encode(ref.read(wishlistStorageProvider).toJson()));
     });
   }
 }
