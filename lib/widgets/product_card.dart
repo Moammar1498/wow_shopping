@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:wow_shopping/app/theme.dart';
-import 'package:wow_shopping/features/product_details/product_page.dart';
-import 'package:wow_shopping/models/product_item.dart';
+import 'package:wow_shopping/features/products/models/products_proxy.dart';
+import 'package:wow_shopping/features/products/pages/product_page.dart';
 import 'package:wow_shopping/widgets/common.dart';
 import 'package:wow_shopping/widgets/min_lines.dart';
 import 'package:wow_shopping/widgets/wishlist_button.dart';
@@ -13,8 +13,8 @@ class SliverProductCard extends StatelessWidget {
     this.onPressed,
   });
 
-  final ProductItem item;
-  final ValueChanged<ProductItem>? onPressed;
+  final ProductProxy item;
+  final ValueChanged<ProductProxy>? onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -37,8 +37,8 @@ class ProductCard extends StatelessWidget {
     this.onPressed,
   });
 
-  final ProductItem item;
-  final ValueChanged<ProductItem>? onPressed;
+  final ProductProxy item;
+  final ValueChanged<ProductProxy>? onPressed;
 
   void _defaultOnPressed(BuildContext context) {
     Navigator.of(context).push(ProductPage.route(item));

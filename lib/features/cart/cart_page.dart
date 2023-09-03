@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:watch_it/watch_it.dart';
 import 'package:wow_shopping/app/assets.dart';
 import 'package:wow_shopping/app/theme.dart';
-import 'package:wow_shopping/backend/backend.dart';
+import 'package:wow_shopping/backend/cart.repo.dart';
 import 'package:wow_shopping/models/cart_item.dart';
 import 'package:wow_shopping/utils/formatting.dart';
 import 'package:wow_shopping/widgets/app_button.dart';
@@ -9,7 +10,7 @@ import 'package:wow_shopping/widgets/common.dart';
 import 'package:wow_shopping/widgets/top_nav_bar.dart';
 
 @immutable
-class CartPage extends StatefulWidget {
+class CartPage extends StatefulWidget with WatchItStatefulWidgetMixin {
   const CartPage({super.key});
 
   @override
@@ -20,9 +21,10 @@ class _CartPageState extends State<CartPage> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<CartItem>>(
-        initialData: cartRepo.currentCartItems,
-        stream: cartRepo.streamCartItems,
-        builder: (BuildContext context, AsyncSnapshot<List<CartItem>> snapshot) {
+        initialData: di<CartRepo>().currentCartItems,
+        stream: di<CartRepo>().streamCartItems,
+        builder:
+            (BuildContext context, AsyncSnapshot<List<CartItem>> snapshot) {
           final items = snapshot.requireData;
           return SizedBox.expand(
             child: Material(
@@ -142,7 +144,7 @@ class _CartItemView extends StatelessWidget {
             padding: allPadding8 - topPadding8,
             child: AppButton(
               onPressed: () {
-                context.cartRepo.removeToCart(item.product.id);
+                di<CartRepo>().removeToCart(item.product.id);
               },
               iconAsset: Assets.iconRemove,
               label: 'Remove',

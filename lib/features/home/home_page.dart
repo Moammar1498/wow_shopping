@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:watch_it/watch_it.dart';
 import 'package:wow_shopping/app/assets.dart';
-import 'package:wow_shopping/backend/backend.dart';
+import 'package:wow_shopping/backend/product.repo.dart';
 import 'package:wow_shopping/features/home/widgets/promo_carousel.dart';
+import 'package:wow_shopping/features/main/bottom_navbar_manager.dart';
 import 'package:wow_shopping/features/main/main_screen.dart';
-import 'package:wow_shopping/models/product_item.dart';
+import 'package:wow_shopping/features/products/models/products_proxy.dart';
 import 'package:wow_shopping/widgets/app_icon.dart';
 import 'package:wow_shopping/widgets/category_nav_list.dart';
 import 'package:wow_shopping/widgets/common.dart';
@@ -97,19 +99,20 @@ class SliverTopSelling extends StatefulWidget {
 }
 
 class _SliverTopSellingState extends State<SliverTopSelling> {
-  late Future<List<ProductItem>> _futureTopSelling;
+  late Future<List<ProductProxy>> _futureTopSelling;
 
   @override
   void initState() {
     super.initState();
-    _futureTopSelling = productsRepo.fetchTopSelling();
+    _futureTopSelling = di<ProductsRepo>().fetchTopSelling();
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<ProductItem>>(
+    return FutureBuilder<List<ProductProxy>>(
       future: _futureTopSelling,
-      builder: (BuildContext context, AsyncSnapshot<List<ProductItem>> snapshot) {
+      builder:
+          (BuildContext context, AsyncSnapshot<List<ProductProxy>> snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
           return const SliverFillRemaining(
             child: Center(
