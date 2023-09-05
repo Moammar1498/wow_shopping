@@ -15,7 +15,7 @@ import 'package:wow_shopping/widgets/product_card.dart';
 import 'package:wow_shopping/widgets/top_nav_bar.dart';
 
 @immutable
-class HomePage extends StatefulWidget {
+class HomePage extends StatefulWidget with WatchItStatefulWidgetMixin {
   const HomePage({super.key});
 
   @override
@@ -27,12 +27,19 @@ class _HomePageState extends State<HomePage> {
     // FIXME: implement filter or deep link?
   }
 
+  NavbarManager navManager = NavbarManager(NavItem.cart);
   void _onPromoPressed(PromoModel promo) {
     // FIXME: demo of gotoSection
     if (promo.asset == Assets.promo1) {
-      MainScreen.of(context).gotoSection(NavItem.wishlist);
+      // NavbarManager(NavItem.wishlist).gotoSectionCommand;
+      MainScreen.of(context).navbarManager.gotoSectionCommand(NavItem.cart);
+      // navbarManager.gotoSectionCommand;
+      // MainScreen.of(context).gotoSection(NavItem.wishlist);
     } else if (promo.asset == Assets.promo2) {
-      MainScreen.of(context).gotoSection(NavItem.cart);
+      // NavbarManager(NavItem.cart).gotoSectionCommand;
+      MainScreen.of(context).navbarManager.gotoSectionCommand(NavItem.wishlist);
+      // navbarManager.gotoSectionCommand;
+      // MainScreen.of(context).gotoSection(NavItem.cart);
     }
   }
 

@@ -7,7 +7,9 @@ class NavbarManager extends ChangeNotifier {
     gotoSectionCommand = Command.createSyncNoResult((x) {
       _selected = x;
       notifyListeners();
-    }, notifyOnlyWhenValueChanges: true);
+    },
+    errorFilter: const ErrorHandlerLocalAndGlobal(),
+    debugName:  'gotoSection Command!');
   }
 
   late final Command<NavItem, void> gotoSectionCommand;
